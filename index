@@ -1,0 +1,64 @@
+#!/usr/bin/env node
+import { createHeliaHTTP } from "@helia/http";
+import { ipns as IPNS } from "@helia/ipns";
+import { generateKeyPair, privateKeyFromProtobuf } from "@libp2p/crypto/keys";
+import { CID } from "multiformats/cid";
+import { fromString as uint8ArrayFromString } from "uint8arrays/from-string";
+import { privateKeyToProtobuf } from "@libp2p/crypto/keys";
+import { Command } from "commander";
+import { toString as uint8ArrayToString } from "uint8arrays/to-string";
+import { getIPNSNameFromKeypair } from "./utils.js";
+
+const PRIVATE_KEY = "CAESQKt9yzxEa4vNMnqqj6ABo6ierevBv9S0RdYzeQArEr8hekAAWPlAhk4lepVC43Aj+6Dh4lUThxitF9O4Tzo8FB0";
+const keypair = privateKeyFromProtobuf(uint8ArrayFromString(PRIVATE_KEY, "base64"));
+const helia = await createHeliaHTTP();
+const ipns = IPNS(helia);
+
+const CID1 = CID.parse("bafkreie7ohywtosou76tasm7j63yigtzxe7d5zqus4zu3j6oltvgtibeom");
+const CID2 = CID.parse("bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi");
+
+const program = new Command();
+
+program.name("test-ipfs").description("test ipfs").version("1.0.0", "-v, --version", "Output the current version");
+
+program
+  .command("ipns-publish")
+  .description("publish cid to IPNS")
+  .action(async () => {
+    const { record } = await ipns.resolve(keypair.publicKey);
+    const value = record?.value;
+    console.info("IPNS Record Value:", value);
+    const cid = value?.includes(CID1.toString()) ? CID2 : CID1;
+    console.info("Publishing CID:", cid);
+    const ipnsName = getIPNSNameFromKeypair(keypair);
+    console.info("IPNS Name:", ipnsName);
+    const file = await ipns.publish(keypair, cid, {
+      lifetime: 24 * 60 * 60 * 1000,
+      offline: false,
+      ttl: 60 * 1000
+    });
+    console.info("Published file:", file);
+    const result = await ipns.resolve(keypair.publicKey);
+    console.info("Resolve result:", result);
+    console.log(`可以通过 https://ipfs.io/ipns/${ipnsName} 访问`);
+  });
+
+program
+  .command("ipns-resolve")
+  .description("resolve IPNS record")
+  .action(async () => {
+    const result = await ipns.resolve(keypair.publicKey);
+    console.info("Resolve result:", result);
+  });
+
+program
+  .command("generate-keypair")
+  .description("generate a new keypair")
+  .action(async () => {
+    const keypair = await generateKeyPair("Ed25519");
+    console.log("Generated Keypair:", keypair);
+    const base64 = uint8ArrayToString(privateKeyToProtobuf(keypair), "base64");
+    console.log("Base64 Encoded Keypair:", base64);
+  });
+
+program.parse(process.argv);
