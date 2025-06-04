@@ -9,10 +9,11 @@ import { Command } from "commander";
 import { toString as uint8ArrayToString } from "uint8arrays/to-string";
 import { getIPNSNameFromKeypair } from "./utils.js";
 import { create as createKuboClient } from "kubo-rpc-client";
-import path from "path";
 import fs from "fs";
 import Dag from "./dag.js";
 import CarStream from "./car-stream.js";
+import Web3Storage from "./web3-storage.js";
+import path from "path";
 
 const PRIVATE_KEY = "CAESQKt9yzxEa4vNMnqqj6ABo6ierevBv9S0RdYzeQArEr8hekAAWPlAhk4lepVC43Aj+6Dh4lUThxitF9O4Tzo8FB0";
 const keypair = privateKeyFromProtobuf(uint8ArrayFromString(PRIVATE_KEY, "base64"));
@@ -24,6 +25,16 @@ const kubo = createKuboClient({
 
 const CID1 = CID.parse("bafkreie7ohywtosou76tasm7j63yigtzxe7d5zqus4zu3j6oltvgtibeom");
 const CID2 = CID.parse("bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi");
+
+const getPinCids = async (cid) => {
+  const pinCids = [];
+  for await (const pin of kubo.pin.ls({
+    paths: [cid]
+  })) {
+    pinCids.push(pin.cid);
+  }
+  return pinCids;
+};
 
 const program = new Command();
 
@@ -90,6 +101,49 @@ program
     const carStream = new CarStream(kubo);
     const result = await carStream.importCar(car);
     console.info("Import result:", result);
+  });
+
+program
+  .command("fetch-upload-list")
+  .description("Fetch the list of uploaded files from Web3Storage")
+  .arguments("<email>", "Email for Web3Storage login")
+  .action(async (email) => {
+    const web3Storage = new Web3Storage();
+    await web3Storage.login(email);
+    const uploads = await web3Storage.fetchAllUploadList();
+    console.info("Fetched Uploads:", uploads);
+  });
+
+program
+  .command("sync-web3-storage")
+  .description("Sync web3.storage uploads to local peer")
+  .arguments("<email>", "Email for Web3Storage login")
+  .action(async (email) => {
+    const web3Storage = new Web3Storage();
+    await web3Storage.login(email);
+
+    const uploads = await web3Storage.fetchUploadList();
+    const cids = uploads.results.map((upload) => upload.root);
+    console.info("Fetched Uploads CIDs:", cids);
+
+    const dag = new Dag(helia);
+    const carStream = new CarStream(kubo);
+
+    for (const cid of cids) {
+      try {
+        await getPinCids(cid);
+        console.info(`CID ${cid} is already pinned.`);
+      } catch (_) {
+        console.info(`CID ${cid} is not pinned, pinning now...`);
+        const car = path.join("car", `${cid.toString()}.car`);
+        if (!fs.existsSync(car)) {
+          await dag.exportDag(cid);
+          console.info(`Exported DAG to CAR file: ${car}`);
+        }
+        const result = await carStream.importCar(car);
+        console.info(`Imported CAR file: `, result);
+      }
+    }
   });
 
 program.parse(process.argv);

@@ -12,17 +12,12 @@ export default class CarStream {
     console.log(`${carFilePath} size:  ${fileSize} bytes`);
     const fileStream = fs.createReadStream(carFilePath);
     let bytesProcessed = 0;
-    let lastLogTime = Date.now();
 
     const progressTracker = new Transform({
       transform(chunk, _, callback) {
         bytesProcessed += chunk.length;
-        const now = Date.now();
-        if (now - lastLogTime > 1000) {
-          const progress = ((bytesProcessed / fileSize) * 100).toFixed(2);
-          console.log(`progress: ${progress}%`);
-          lastLogTime = now;
-        }
+        const progress = ((bytesProcessed / fileSize) * 100).toFixed(2);
+        console.log(`progress: ${progress}%`);
         callback(null, chunk);
       }
     });
