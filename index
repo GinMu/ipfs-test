@@ -122,8 +122,8 @@ program
     const web3Storage = new Web3Storage();
     await web3Storage.login(email);
 
-    const uploads = await web3Storage.fetchUploadList();
-    const cids = uploads.results.map((upload) => upload.root);
+    const uploads = await web3Storage.fetchAllUploadList();
+    const cids = uploads.map((upload) => upload.root);
     console.info("Fetched Uploads CIDs:", cids);
 
     const dag = new Dag(helia);
