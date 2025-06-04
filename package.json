@@ -17,12 +17,15 @@
   "type": "module",
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
   "dependencies": {
+    "@helia/car": "^4.1.2",
     "@helia/dag-cbor": "^4.0.6",
     "@helia/http": "^2.1.2",
     "@helia/ipns": "^8.2.3",
     "@helia/unixfs": "^5.0.3",
+    "@web3-storage/w3up-client": "^17.3.0",
     "commander": "^14.0.0",
     "helia": "^5.4.2",
+    "kubo-rpc-client": "^5.1.0",
     "libp2p-crypto": "^0.21.2"
   }
 }

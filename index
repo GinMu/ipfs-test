@@ -8,11 +8,19 @@ import { privateKeyToProtobuf } from "@libp2p/crypto/keys";
 import { Command } from "commander";
 import { toString as uint8ArrayToString } from "uint8arrays/to-string";
 import { getIPNSNameFromKeypair } from "./utils.js";
+import { create as createKuboClient } from "kubo-rpc-client";
+import path from "path";
+import fs from "fs";
+import Dag from "./dag.js";
+import CarStream from "./car-stream.js";
 
 const PRIVATE_KEY = "CAESQKt9yzxEa4vNMnqqj6ABo6ierevBv9S0RdYzeQArEr8hekAAWPlAhk4lepVC43Aj+6Dh4lUThxitF9O4Tzo8FB0";
 const keypair = privateKeyFromProtobuf(uint8ArrayFromString(PRIVATE_KEY, "base64"));
 const helia = await createHeliaHTTP();
 const ipns = IPNS(helia);
+const kubo = createKuboClient({
+  url: "http://127.0.0.1:5001"
+});
 
 const CID1 = CID.parse("bafkreie7ohywtosou76tasm7j63yigtzxe7d5zqus4zu3j6oltvgtibeom");
 const CID2 = CID.parse("bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi");
@@ -59,6 +67,29 @@ program
     console.log("Generated Keypair:", keypair);
     const base64 = uint8ArrayToString(privateKeyToProtobuf(keypair), "base64");
     console.log("Base64 Encoded Keypair:", base64);
+  });
+
+program
+  .command("export-dag")
+  .description("export a DAG to a CAR file")
+  .argument("<cid>", "CID of the DAG to export")
+  .action(async (cid) => {
+    const dag = new Dag(helia);
+    await dag.exportDag(CID.parse(cid));
+  });
+
+program
+  .command("import-car")
+  .description("import a CAR file to peer")
+  .argument("<car>", "Path to the CAR file")
+  .action(async (car) => {
+    if (!fs.existsSync(car)) {
+      console.error(`File not found: ${car}`);
+      return;
+    }
+    const carStream = new CarStream(kubo);
+    const result = await carStream.importCar(car);
+    console.info("Import result:", result);
   });
 
 program.parse(process.argv);
