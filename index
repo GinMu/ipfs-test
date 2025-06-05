@@ -1,10 +1,15 @@
 #!/usr/bin/env node
 import { createHeliaHTTP } from "@helia/http";
 import { ipns as IPNS } from "@helia/ipns";
-import { generateKeyPair, privateKeyFromProtobuf } from "@libp2p/crypto/keys";
+import {
+  generateKeyPair,
+  privateKeyFromProtobuf,
+  publicKeyFromRaw,
+  privateKeyFromRaw,
+  privateKeyToProtobuf
+} from "@libp2p/crypto/keys";
 import { CID } from "multiformats/cid";
 import { fromString as uint8ArrayFromString } from "uint8arrays/from-string";
-import { privateKeyToProtobuf } from "@libp2p/crypto/keys";
 import { Command } from "commander";
 import { toString as uint8ArrayToString } from "uint8arrays/to-string";
 import { getIPNSNameFromKeypair } from "./utils.js";
@@ -174,6 +179,40 @@ program
     );
     await ipns.publish(keypair, cid);
     console.log(`visit https://ipfs.io/ipns/${ipnsName}/${path}`);
+  });
+
+program
+  .command("unmarshal-secp256k1")
+  .description("Unmarshal a secp256k1 private key")
+  .action(() => {
+    const keypair = {
+      privateKey: "7a6ff008ee2d556eadf39e7e6a32bf7eee3c6251b30831fe5417e2b06aad3a18",
+      publicKey: "027d8aa2c023b41ae1b86ea806c5bf84db48801e884778e44741c229d0e5ad6a37"
+    };
+    const privateKey = privateKeyFromRaw(uint8ArrayFromString(keypair.privateKey, "hex"));
+    console.info("Unmarshalled Private Key (Secp256k1):", privateKey);
+    const publicKey = publicKeyFromRaw(uint8ArrayFromString(keypair.publicKey, "hex"));
+    console.info("Public Key from Raw (Secp256k1):", publicKey);
+
+    const pub = uint8ArrayToString(publicKey.raw, "hex");
+    console.info("Public Key from Raw (Secp256k1):", pub);
+  });
+
+program
+  .command("unmarshal-ed25519")
+  .description("Unmarshal an Ed25519 private key")
+  .action(async () => {
+    const keypair = {
+      privateKey: "628021cb2cecb88782bb1a5a5efe5c6c225b6f952394d09d34917ef50ee63f06",
+      publicKey: "3c1a2f25abc2dd9124b56a329284cc5242a775fcab0e048269d6a2b9d103cc32"
+    };
+    const priv = privateKeyFromRaw(uint8ArrayFromString(keypair.privateKey + keypair.publicKey, "hex"));
+    console.info("Unmarshalled Private Key (Ed25519):", priv);
+    const publicKey = publicKeyFromRaw(uint8ArrayFromString(keypair.publicKey, "hex"));
+    console.info("Public Key from Raw (Ed25519):", publicKey);
+
+    const pub = uint8ArrayToString(publicKey.raw, "hex");
+    console.info("Public Key from Raw (Ed25519):", pub);
   });
 
 program.parse(process.argv);
