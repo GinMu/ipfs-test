@@ -152,4 +152,28 @@ program
     }
   });
 
+program
+  .command("update-ipns-record")
+  .description("Update IPNS record with a new CID")
+  .action(async () => {
+    const content = `Hello from Helia! Upload time: ${new Date().toISOString()}`;
+    console.info("Adding content: ", content);
+    const PRIVATE_KEY = "CAESQDIO27/xDRuh+h0VGa2FOTSxCSpBIceSu864J68DwNXYBQLmVYqwLTMPOBv0A6/oMu0nOoZwjYz1KbTUPPGJ048";
+    const keypair = privateKeyFromProtobuf(uint8ArrayFromString(PRIVATE_KEY, "base64"));
+    const ipnsName = getIPNSNameFromKeypair(keypair);
+    const path = "ccdao/hello.txt";
+    const { cid } = await kubo.add(
+      {
+        path,
+        content: uint8ArrayFromString(content)
+      },
+      {
+        // Wrap the content in a directory
+        wrapWithDirectory: true
+      }
+    );
+    await ipns.publish(keypair, cid);
+    console.log(`visit https://ipfs.io/ipns/${ipnsName}/${path}`);
+  });
+
 program.parse(process.argv);
