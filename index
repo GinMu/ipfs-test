@@ -44,7 +44,13 @@ program
   .command("ipns-publish")
   .description("publish cid to IPNS")
   .action(async () => {
-    const { record } = await ipns.resolve(keypair.publicKey);
+    let record;
+    try {
+      const result = await ipns.resolve(keypair.publicKey);
+      record = result.record;
+    } catch (error) {
+      console.error("Resolving IPNS error:", error);
+    }
     const value = record?.value;
     console.info("IPNS Record Value:", value);
     const cid = value?.includes(CID1.toString()) ? CID2 : CID1;
