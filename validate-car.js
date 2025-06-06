@@ -73,19 +73,17 @@ const validate = async (carPath, opts = {}) => {
     }
   });
   for await (const entry of entries) {
-    const { type, content, path } = entry;
-    if (type === "file" || type === "raw") {
-      await pipeline(content, async (source) => {
-        let value = await source.next();
-        while (!value.done) {
-          value = await source.next();
-        }
-      });
-    } else if (type === "directory") {
-    } else {
-      /* c8 ignore next 4 */
-      throw new Error(`Unsupported UnixFS type ${type} for path: ${path}`);
+    const { type, content } = entry;
+    if (type === "directory") {
+      continue;
     }
+    // file, raw, object, or identity
+    await pipeline(content, async (source) => {
+      let value = await source.next();
+      while (!value.done) {
+        value = await source.next();
+      }
+    });
   }
 };
 
