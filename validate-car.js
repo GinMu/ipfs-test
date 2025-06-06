@@ -8,6 +8,7 @@ import { validateBlock } from "@web3-storage/car-block-validator";
 import { CID } from "multiformats/cid";
 import { sha256 } from "multiformats/hashes/sha2";
 import { decode as blockDecode } from "multiformats/block";
+import { pipeline } from "stream/promises";
 import * as raw from "multiformats/codecs/raw";
 import * as dagPb from "@ipld/dag-pb";
 import * as dagCbor from "@ipld/dag-cbor";
@@ -61,7 +62,7 @@ const findImplicitRoots = async (blocks) => {
 const validate = async (carPath, opts = {}) => {
   const reader = await CarIndexedReader.fromFile(carPath);
   const [root] = await getRoots(reader, opts);
-  const gen = exporter(root, {
+  const entries = exporter(root, {
     async get(cid) {
       const block = await reader.get(cid);
       if (!block) {
@@ -71,9 +72,20 @@ const validate = async (carPath, opts = {}) => {
       return block.bytes;
     }
   });
-  let value = await gen.next();
-  while (!value.done) {
-    value = await gen.next();
+  for await (const entry of entries) {
+    const { type, content, path } = entry;
+    if (type === "file" || type === "raw") {
+      await pipeline(content, async (source) => {
+        let value = await source.next();
+        while (!value.done) {
+          value = await source.next();
+        }
+      });
+    } else if (type === "directory") {
+    } else {
+      /* c8 ignore next 4 */
+      throw new Error(`Unsupported UnixFS type ${type} for path: ${path}`);
+    }
   }
 };
 
