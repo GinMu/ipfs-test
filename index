@@ -19,6 +19,7 @@ import Dag from "./dag.js";
 import CarStream from "./car-stream.js";
 import Web3Storage from "./web3-storage.js";
 import path from "path";
+import validate from "./validate-car.js";
 
 const PRIVATE_KEY = "CAESQKt9yzxEa4vNMnqqj6ABo6ierevBv9S0RdYzeQArEr8hekAAWPlAhk4lepVC43Aj+6Dh4lUThxitF9O4Tzo8FB0";
 const keypair = privateKeyFromProtobuf(uint8ArrayFromString(PRIVATE_KEY, "base64"));
@@ -213,6 +214,19 @@ program
 
     const pub = uint8ArrayToString(publicKey.raw, "hex");
     console.info("Public Key from Raw (Ed25519):", pub);
+  });
+
+program
+  .command("validate-car")
+  .description("Validate a CAR file")
+  .argument("<carPath>", "Path to the CAR file")
+  .action(async (carPath) => {
+    try {
+      await validate(carPath);
+      console.info("CAR file is valid.");
+    } catch (error) {
+      console.error("CAR file validation failed: ", error);
+    }
   });
 
 program.parse(process.argv);
