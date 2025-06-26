@@ -336,7 +336,7 @@
     cborg "^4.0.0"
     multiformats "^13.1.0"
 
-"@ipld/dag-pb@^4.0.0", "@ipld/dag-pb@^4.1.2", "@ipld/dag-pb@^4.1.3":
+"@ipld/dag-pb@^4.0.0", "@ipld/dag-pb@^4.1.2", "@ipld/dag-pb@^4.1.3", "@ipld/dag-pb@^4.1.5":
   version "4.1.5"
   resolved "https://registry.yarnpkg.com/@ipld/dag-pb/-/dag-pb-4.1.5.tgz#e3bdf11995e038877a737e3684d2382e481b60df"
   integrity sha512-w4PZ2yPqvNmlAir7/2hsCRMqny1EY5jj26iZcSgxREJexmbAc2FI21jp26MqiNdfgAxvkCnf2N/TJI18GaDNwA==
@@ -2189,7 +2189,7 @@ ini@~1.3.0:
   resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.8.tgz#a29da425b48806f34767a4efce397269af28432c"
   integrity sha512-JV/yugV2uzW5iMRSiZAyDtQd+nxtUnjeLt0acNdw98kKLrvuRVyB80tsREOE7yvGVgalhZ6RNXCmEHkUKBKxew==
 
-interface-blockstore@^5.0.0, interface-blockstore@^5.3.0, interface-blockstore@^5.3.1:
+interface-blockstore@^5.0.0, interface-blockstore@^5.3.0, interface-blockstore@^5.3.1, interface-blockstore@^5.3.2:
   version "5.3.2"
   resolved "https://registry.yarnpkg.com/interface-blockstore/-/interface-blockstore-5.3.2.tgz#0fb32bb94c12ba5211d417b83abd1f34ed785779"
   integrity sha512-oA9Pjkxun/JHAsZrYEyKX+EoPjLciTzidE7wipLc/3YoHDjzsnXRJzAzFJXNUvogtY4g7hIwxArx8+WKJs2RIg==
@@ -2205,7 +2205,7 @@ interface-datastore@^8.0.0, interface-datastore@^8.3.0, interface-datastore@^8.3
     interface-store "^6.0.0"
     uint8arrays "^5.1.0"
 
-interface-store@^6.0.0, interface-store@^6.0.2:
+interface-store@^6.0.0, interface-store@^6.0.2, interface-store@^6.0.3:
   version "6.0.3"
   resolved "https://registry.yarnpkg.com/interface-store/-/interface-store-6.0.3.tgz#a4443490976f52e1b40ff99ddfbc690dfbb00863"
   integrity sha512-+WvfEZnFUhRwFxgz+QCQi7UC6o9AM0EHM9bpIe2Nhqb100NHCsTvNAn4eJgvgV2/tmLo1MP9nGxQKEcZTAueLA==
@@ -2253,6 +2253,27 @@ ipfs-unixfs-importer@^15.3.1:
     it-first "^3.0.6"
     it-parallel-batch "^3.0.6"
     multiformats "^13.2.3"
+    progress-events "^1.0.1"
+    rabin-wasm "^0.1.5"
+    uint8arraylist "^2.4.8"
+    uint8arrays "^5.1.0"
+
+ipfs-unixfs-importer@^15.4.0:
+  version "15.4.0"
+  resolved "https://registry.yarnpkg.com/ipfs-unixfs-importer/-/ipfs-unixfs-importer-15.4.0.tgz#d58777708476ea5a09782b60694f6ea4cfe391cb"
+  integrity sha512-laypY07Q0uGLMSxx5YsfVAEPVzdbV2p9cEC1/HNxqoWoz83LA2nX45usr8dcehalKLHm38u0FwUiRHq5wCHngQ==
+  dependencies:
+    "@ipld/dag-pb" "^4.1.5"
+    "@multiformats/murmur3" "^2.1.8"
+    hamt-sharding "^3.0.6"
+    interface-blockstore "^5.3.2"
+    interface-store "^6.0.3"
+    ipfs-unixfs "^11.0.0"
+    it-all "^3.0.9"
+    it-batch "^3.0.9"
+    it-first "^3.0.9"
+    it-parallel-batch "^3.0.9"
+    multiformats "^13.3.7"
     progress-events "^1.0.1"
     rabin-wasm "^0.1.5"
     uint8arraylist "^2.4.8"
@@ -2392,10 +2413,20 @@ it-all@^3.0.0, it-all@^3.0.4, it-all@^3.0.6, it-all@^3.0.8:
   resolved "https://registry.yarnpkg.com/it-all/-/it-all-3.0.8.tgz#b249d916576172982f588385096be249898bb7f4"
   integrity sha512-TFAXqUjwuPFhyktbU7XIOjdvqjpc/c2xvDYfCrfHA6HP68+EQDCXuwGJ9YchvZTyXSaB2fkX3lI9aybcFUHWUw==
 
+it-all@^3.0.9:
+  version "3.0.9"
+  resolved "https://registry.yarnpkg.com/it-all/-/it-all-3.0.9.tgz#9b9b54ddb42786260c3d9e25feeaa02e667be1cc"
+  integrity sha512-fz1oJJ36ciGnu2LntAlE6SA97bFZpW7Rnt0uEc1yazzR2nKokZLr8lIRtgnpex4NsmaBcvHF+Z9krljWFy/mmg==
+
 it-batch@^3.0.0, it-batch@^3.0.6:
   version "3.0.8"
   resolved "https://registry.yarnpkg.com/it-batch/-/it-batch-3.0.8.tgz#80042993487cb18760934c52e32f952a2bddc84b"
   integrity sha512-sZPc1Wwtht3hzUcoPMTr5ByxPJ+y7ok3kAduxTslSnilGsR02aTNMc/wUrZlRHxyx6oWnjTrv1ASpSszguPumQ==
+
+it-batch@^3.0.9:
+  version "3.0.9"
+  resolved "https://registry.yarnpkg.com/it-batch/-/it-batch-3.0.9.tgz#d0e3b57403908d3ea14a44ec2b40026b0c44e709"
+  integrity sha512-z6p89Q8gm2urBtF3JcpnbJogacijWk3m1uc3xZYI3x0eJUoYLUbgF8IxJ2fnuVObV7yRv3SixfwGCufaZY1NCg==
 
 it-byte-stream@^2.0.0, it-byte-stream@^2.0.2:
   version "2.0.2"
@@ -2424,6 +2455,11 @@ it-first@^3.0.4, it-first@^3.0.6:
   version "3.0.8"
   resolved "https://registry.yarnpkg.com/it-first/-/it-first-3.0.8.tgz#0c8f89f279bcdc4eb1c9627ce9e4e117c64a7526"
   integrity sha512-neaRRwOMCmMKkXJVZ4bvUDVlde+Xh0aTWr7hFaOZeDXzbctGVV/WHmPVqBqy3RjlsP7eRM0vcqNtlM8hivcmGw==
+
+it-first@^3.0.9:
+  version "3.0.9"
+  resolved "https://registry.yarnpkg.com/it-first/-/it-first-3.0.9.tgz#cee48427aaa36ec34df6644042c7f22349832070"
+  integrity sha512-ZWYun273Gbl7CwiF6kK5xBtIKR56H1NoRaiJek2QzDirgen24u8XZ0Nk+jdnJSuCTPxC2ul1TuXKxu/7eK6NuA==
 
 it-foreach@^2.0.6, it-foreach@^2.1.1, it-foreach@^2.1.3:
   version "2.1.3"
@@ -2512,6 +2548,13 @@ it-parallel-batch@^3.0.6:
   version "3.0.8"
   resolved "https://registry.yarnpkg.com/it-parallel-batch/-/it-parallel-batch-3.0.8.tgz#869f861e0f7506f166e2540c3724ce7acc4a68a4"
   integrity sha512-FWKdzfPNfUgE7DdHWPGPfRHXhFkx427F5rKHCM1DpN0ALsMdi/lhVOIhI7kNHoQwzYz/bFpPLCCA8BgnOcznXA==
+  dependencies:
+    it-batch "^3.0.0"
+
+it-parallel-batch@^3.0.9:
+  version "3.0.9"
+  resolved "https://registry.yarnpkg.com/it-parallel-batch/-/it-parallel-batch-3.0.9.tgz#4fcaa8328e2b534471d8dceec907fb6325673b01"
+  integrity sha512-TszXWqqLG8IG5DUEnC4cgH9aZI6CsGS7sdkXTiiacMIj913bFy7+ohU3IqsFURCcZkpnXtNLNzrYnXISsKBhbQ==
   dependencies:
     it-batch "^3.0.0"
 
@@ -2843,6 +2886,11 @@ multiformats@^13.0.0, multiformats@^13.0.1, multiformats@^13.1.0, multiformats@^
   version "13.3.6"
   resolved "https://registry.yarnpkg.com/multiformats/-/multiformats-13.3.6.tgz#3a657fd4ae39e04b739491b9e8b3be7926e0f792"
   integrity sha512-yakbt9cPYj8d3vi/8o/XWm61MrOILo7fsTL0qxNx6zS0Nso6K5JqqS2WV7vK/KSuDBvrW3KfCwAdAgarAgOmww==
+
+multiformats@^13.3.7:
+  version "13.3.7"
+  resolved "https://registry.yarnpkg.com/multiformats/-/multiformats-13.3.7.tgz#9313edd1b152d9997ab6830c4f702783e724d62f"
+  integrity sha512-meL9DERHj+fFVWoOX9fXqfcYcSpUfSYJPcFvDPKrxitICbwAoWR+Ut4j5NO9zAT917HUHLQmqzQbAsGNHlDcxQ==
 
 multiformats@^9.4.2, multiformats@^9.4.5:
   version "9.9.0"

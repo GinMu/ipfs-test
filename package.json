@@ -26,6 +26,7 @@
     "@web3-storage/w3up-client": "^17.3.0",
     "commander": "^14.0.0",
     "helia": "^5.4.2",
+    "ipfs-unixfs-importer": "^15.4.0",
     "kubo-rpc-client": "^5.1.0",
     "libp2p-crypto": "^0.21.2"
   }

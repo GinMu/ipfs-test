@@ -9,6 +9,8 @@ import {
   privateKeyToProtobuf
 } from "@libp2p/crypto/keys";
 import { CID } from "multiformats/cid";
+import { importer } from "ipfs-unixfs-importer";
+import { MemoryBlockstore } from "blockstore-core/memory";
 import { fromString as uint8ArrayFromString } from "uint8arrays/from-string";
 import { Command } from "commander";
 import { toString as uint8ArrayToString } from "uint8arrays/to-string";
@@ -235,22 +237,21 @@ program
   .argument("<path>", "Path to the file")
   .argument("[wrapWithDirectory]", "Wrap the content in a directory", false)
   .action(async (path, wrapWithDirectory) => {
-    try {
-      const res = await kubo.add(
-        {
-          path,
-          content: fs.createReadStream(path)
-        },
-        {
-          wrapWithDirectory,
-          onlyHash: true,
-          cidVersion: 1
-        }
-      );
-      console.info("Generated CID:", res);
-    } catch (error) {
-      console.error("Invalid CID:", error);
+    const blockstore = new MemoryBlockstore();
+    const source = [
+      {
+        path,
+        content: fs.createReadStream(path)
+      }
+    ];
+    const cids = [];
+    for await (const entry of importer(source, blockstore, {
+      wrapWithDirectory,
+      cidVersion: 1
+    })) {
+      cids.push(entry);
     }
+    console.info("Generated CIDs:", cids);
   });
 
 program.parse(process.argv);
