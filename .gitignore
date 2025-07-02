@@ -136,4 +136,5 @@ dist
 .pnp.*
 .DS_Store
 *.car
+car/*.json
 COMMANDS.md

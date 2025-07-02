@@ -290,4 +290,22 @@ program
     zipfile.end();
   });
 
+program
+  .command("ls")
+  .description("List files in a cid")
+  .argument("<cid>", "CID of the directory to list")
+  .action(async (cid) => {
+    const files = [];
+    for await (const file of kubo.ls(cid)) {
+      files.push(file);
+    }
+    const cids = files.map(({ name, cid }) => {
+      return {
+        name: name.split(".")[0],
+        cid: cid.toString()
+      };
+    });
+    fs.writeFileSync(`./car/${cid}.json`, JSON.stringify(cids, null, 2));
+  });
+
 program.parse(process.argv);
