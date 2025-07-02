@@ -22,6 +22,7 @@ import CarStream from "./car-stream.js";
 import Web3Storage from "./web3-storage.js";
 import path from "path";
 import validate from "./validate-car.js";
+import unzip from "./unzip.js";
 
 const PRIVATE_KEY = "CAESQKt9yzxEa4vNMnqqj6ABo6ierevBv9S0RdYzeQArEr8hekAAWPlAhk4lepVC43Aj+6Dh4lUThxitF9O4Tzo8FB0";
 const keypair = privateKeyFromProtobuf(uint8ArrayFromString(PRIVATE_KEY, "base64"));
@@ -252,6 +253,18 @@ program
       cids.push(entry);
     }
     console.info("Generated CIDs:", cids);
+  });
+
+program
+  .command("unzip")
+  .description("Unzip and rename NFT images in a directory")
+  .argument("<zipFilePath>", "Path to the zip file")
+  .argument("<output>", "Output directory for unzipped images")
+  .action(async (zipFilePath, output) => {
+    console.log("Unzipping NFT images from:", zipFilePath);
+    await unzip(zipFilePath, output);
+    const files = fs.readdirSync(output);
+    console.log("Unzipped success, files length:", files.length);
   });
 
 program.parse(process.argv);
