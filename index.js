@@ -308,4 +308,20 @@ program
     fs.writeFileSync(`./car/${cid}.json`, JSON.stringify(cids, null, 2));
   });
 
+program
+  .command("routing-provide")
+  .description("Provide a CID to the routing system")
+  .argument("<cid>", "CID to provide")
+  .action(async (cid) => {
+    const cidObj = CID.parse(cid);
+    try {
+      await kubo.routing.provide(cidObj, {
+        recursive: true
+      });
+      console.log(`Successfully provided CID: ${cid}`);
+    } catch (error) {
+      console.error(`Failed to provide CID: ${cid}`, error);
+    }
+  });
+
 program.parse(process.argv);
