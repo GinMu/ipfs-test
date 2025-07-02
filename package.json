@@ -29,6 +29,7 @@
     "ipfs-unixfs-importer": "^15.4.0",
     "kubo-rpc-client": "^5.1.0",
     "libp2p-crypto": "^0.21.2",
-    "yauzl": "^3.2.0"
+    "yauzl": "^3.2.0",
+    "yazl": "^3.3.1"
   }
 }

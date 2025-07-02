@@ -21,6 +21,7 @@ import Dag from "./dag.js";
 import CarStream from "./car-stream.js";
 import Web3Storage from "./web3-storage.js";
 import path from "path";
+import { ZipFile } from "yazl";
 import validate from "./validate-car.js";
 import unzip from "./unzip.js";
 
@@ -265,6 +266,28 @@ program
     await unzip(zipFilePath, output);
     const files = fs.readdirSync(output);
     console.log("Unzipped success, files length:", files.length);
+  });
+
+program
+  .command("zip")
+  .description("Zip a directory of NFT images")
+  .argument("<inputDir>", "Directory containing NFT images")
+  .argument("<outputZip>", "Output zip file path")
+  .action(async (inputDir, outputZip) => {
+    const zipfile = new ZipFile();
+    const files = fs.readdirSync(inputDir);
+
+    for (const file of files) {
+      const filePath = path.join(inputDir, file);
+      if (fs.statSync(filePath).isFile()) {
+        zipfile.addFile(filePath, filePath);
+      }
+    }
+
+    zipfile.outputStream.pipe(fs.createWriteStream(outputZip)).on("close", () => {
+      console.log(`Zipped ${files.length} files to ${outputZip}`);
+    });
+    zipfile.end();
   });
 
 program.parse(process.argv);
