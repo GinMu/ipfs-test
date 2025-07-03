@@ -22,6 +22,7 @@ import CarStream from "./car-stream.js";
 import Web3Storage from "./web3-storage.js";
 import path from "path";
 import { ZipFile } from "yazl";
+import { parse } from "json2csv";
 import validate from "./validate-car.js";
 import unzip from "./unzip.js";
 
@@ -299,12 +300,14 @@ program
     for await (const file of kubo.ls(cid)) {
       files.push(file);
     }
-    const cids = files.map(({ name, cid }) => {
-      return {
-        name: name.split(".")[0],
-        cid: cid.toString()
-      };
-    });
+    const cids = files
+      .map(({ name, cid }) => {
+        return {
+          tokenID: Number(name.split(".")[0]),
+          cid: cid.toString()
+        };
+      })
+      .sort((a, b) => a.tokenID - b.tokenID);
     fs.writeFileSync(`./car/${cid}.json`, JSON.stringify(cids, null, 2));
   });
 
@@ -322,6 +325,22 @@ program
     } catch (error) {
       console.error(`Failed to provide CID: ${cid}`, error);
     }
+  });
+
+program
+  .command("generate-nft-storage-csv")
+  .description("Generate a CSV file from a JSON file containing NFT storage data")
+  .argument("<jsonFile>", "Path to the input JSON file")
+  .argument("<csvFile>", "Path to the output CSV file")
+  .action(async (jsonFile, csvFile) => {
+    if (!fs.existsSync(jsonFile)) {
+      console.error(`JSON file not found: ${jsonFile}`);
+      return;
+    }
+    const jsonData = JSON.parse(fs.readFileSync(jsonFile, "utf-8"));
+    const csv = parse(jsonData);
+    fs.writeFileSync(csvFile, csv);
+    console.log(`CSV file created at: ${csvFile}`);
   });
 
 program.parse(process.argv);

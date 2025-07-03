@@ -27,6 +27,7 @@
     "commander": "^14.0.0",
     "helia": "^5.4.2",
     "ipfs-unixfs-importer": "^15.4.0",
+    "json2csv": "^6.0.0-alpha.2",
     "kubo-rpc-client": "^5.1.0",
     "libp2p-crypto": "^0.21.2",
     "yauzl": "^3.2.0",

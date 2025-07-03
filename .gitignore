@@ -137,4 +137,5 @@ dist
 .DS_Store
 *.car
 car/*.json
+car/*.csv
 COMMANDS.md
