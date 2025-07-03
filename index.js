@@ -22,7 +22,8 @@ import CarStream from "./car-stream.js";
 import Web3Storage from "./web3-storage.js";
 import path from "path";
 import { ZipFile } from "yazl";
-import { parse } from "json2csv";
+import { Parser } from "@json2csv/plainjs";
+import { string as stringFormatter } from "@json2csv/formatters";
 import validate from "./validate-car.js";
 import unzip from "./unzip.js";
 
@@ -337,8 +338,13 @@ program
       console.error(`JSON file not found: ${jsonFile}`);
       return;
     }
+    const parser = new Parser({
+      formatters: {
+        string: stringFormatter({ quote: "" })
+      }
+    });
     const jsonData = JSON.parse(fs.readFileSync(jsonFile, "utf-8"));
-    const csv = parse(jsonData);
+    const csv = parser.parse(jsonData);
     fs.writeFileSync(csvFile, csv);
     console.log(`CSV file created at: ${csvFile}`);
   });
