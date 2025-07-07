@@ -329,6 +329,27 @@ program
   });
 
 program
+  .command("routing-find-providers")
+  .description("Find providers for a CID")
+  .argument("<cid>", "CID to find providers for")
+  .action(async (cid) => {
+    const cidObj = CID.parse(cid);
+    try {
+      const routes = [];
+      for await (const provider of kubo.routing.findProvs(cidObj)) {
+        routes.push(provider);
+      }
+      const providers = routes
+        .filter((route) => route.name === "PROVIDER")
+        .map(({ providers }) => providers?.[0]?.id)
+        .filter(Boolean);
+      console.log("Found providers:", JSON.stringify(providers, null, 2));
+    } catch (error) {
+      console.error(`Failed to find providers for CID: ${cid}`, error);
+    }
+  });
+
+program
   .command("generate-nft-storage-csv")
   .description("Generate a CSV file from a JSON file containing NFT storage data")
   .argument("<jsonFile>", "Path to the input JSON file")
