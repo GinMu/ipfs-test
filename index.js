@@ -316,13 +316,27 @@ program
   .command("routing-provide")
   .description("Provide a CID to the routing system")
   .argument("<cid>", "CID to provide")
-  .action(async (cid) => {
-    const cidObj = CID.parse(cid);
+  .argument("[provideChildCids]", "Whether to provide child CIDs", false)
+  .action(async (cid, provideChildCids) => {
+    let cidObj;
+    if (provideChildCids) {
+      const cids = [];
+      for await (const file of kubo.ls(cid)) {
+        cids.push(file.cid);
+      }
+      cidObj = cids;
+    } else {
+      cidObj = CID.parse(cid);
+    }
+    console.info("Providing CID:", cidObj);
+
     try {
-      await kubo.routing.provide(cidObj, {
+      for await (const route of kubo.routing.provide(cidObj, {
         recursive: true
-      });
-      console.log(`Successfully provided CID: ${cid}`);
+      })) {
+        console.info("Provided route:", route);
+      }
+      console.info("Provided CID:", cidObj);
     } catch (error) {
       console.error(`Failed to provide CID: ${cid}`, error);
     }
