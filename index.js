@@ -356,7 +356,9 @@ program
   .description("Generate a CSV file from a JSON file containing NFT storage data")
   .argument("<jsonFile>", "Path to the input JSON file")
   .argument("<csvFile>", "Path to the output CSV file")
-  .action(async (jsonFile, csvFile) => {
+  .argument("[indexFrom]", "Index from which to start processing the JSON data")
+  .argument("[indexEnd]", "Index at which to stop processing the JSON data")
+  .action(async (jsonFile, csvFile, from, to) => {
     if (!fs.existsSync(jsonFile)) {
       console.error(`JSON file not found: ${jsonFile}`);
       return;
@@ -366,7 +368,16 @@ program
         string: stringFormatter({ quote: "" })
       }
     });
-    const jsonData = JSON.parse(fs.readFileSync(jsonFile, "utf-8"));
+    let jsonData = JSON.parse(fs.readFileSync(jsonFile, "utf-8"));
+    if (from !== undefined && to !== undefined) {
+      const startIndex = parseInt(from, 10);
+      const endIndex = parseInt(to, 10);
+      if (isNaN(startIndex) || isNaN(endIndex)) {
+        console.error("Invalid index range provided.");
+        return;
+      }
+      jsonData = jsonData.filter(({ tokenID }) => tokenID >= startIndex && tokenID <= endIndex);
+    }
     const csv = parser.parse(jsonData);
     fs.writeFileSync(csvFile, csv);
     console.log(`CSV file created at: ${csvFile}`);
