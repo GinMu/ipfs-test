@@ -17,6 +17,16 @@ import { toString as uint8ArrayToString } from "uint8arrays/to-string";
 import { getIPNSNameFromKeypair } from "./utils.js";
 import { create as createKuboClient } from "kubo-rpc-client";
 import fs from "fs";
+import { unixfs as Unixfs } from "@helia/unixfs";
+import { noise } from "@chainsafe/libp2p-noise";
+import { yamux } from "@chainsafe/libp2p-yamux";
+import { bootstrap } from "@libp2p/bootstrap";
+import { identify } from "@libp2p/identify";
+import { tcp } from "@libp2p/tcp";
+import { createHelia } from "helia";
+import { createLibp2p } from "libp2p";
+import { MemoryDatastore } from "datastore-core";
+
 import Dag from "./dag.js";
 import CarStream from "./car-stream.js";
 import Web3Storage from "./web3-storage.js";
@@ -26,6 +36,44 @@ import { Parser } from "@json2csv/plainjs";
 import { string as stringFormatter } from "@json2csv/formatters";
 import validate from "./validate-car.js";
 import unzip from "./unzip.js";
+
+const createNode = async () => {
+  const blockstore = new MemoryBlockstore();
+
+  // application-specific data lives in the datastore
+  const datastore = new MemoryDatastore();
+  const libp2p = await createLibp2p({
+    datastore,
+    addresses: {
+      listen: ["/ip4/127.0.0.1/tcp/0"]
+    },
+    transports: [tcp()],
+    connectionEncrypters: [noise()],
+    streamMuxers: [yamux()],
+    peerDiscovery: [
+      bootstrap({
+        list: [
+          "/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",
+          "/ip4/104.131.131.82/udp/4001/quic-v1/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",
+          "/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
+          "/dnsaddr/bootstrap.libp2p.io/p2p/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa",
+          "/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb",
+          "/dnsaddr/bootstrap.libp2p.io/p2p/QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt",
+          "/dnsaddr/va1.bootstrap.libp2p.io/p2p/12D3KooWKnDdG3iXw9eTFijk3EWSunZcFi54Zka4wmtqtt6rPxc8"
+        ]
+      })
+    ],
+    services: {
+      identify: identify()
+    }
+  });
+
+  return await createHelia({
+    blockstore,
+    datastore,
+    libp2p
+  });
+};
 
 const PRIVATE_KEY = "CAESQKt9yzxEa4vNMnqqj6ABo6ierevBv9S0RdYzeQArEr8hekAAWPlAhk4lepVC43Aj+6Dh4lUThxitF9O4Tzo8FB0";
 const keypair = privateKeyFromProtobuf(uint8ArrayFromString(PRIVATE_KEY, "base64"));
@@ -381,6 +429,19 @@ program
     const csv = parser.parse(jsonData);
     fs.writeFileSync(csvFile, csv);
     console.log(`CSV file created at: ${csvFile}`);
+  });
+
+program
+  .command("fs")
+  .description("test unixfs")
+  .action(async () => {
+    const helia = await createHelia();
+    const unixfs = Unixfs(helia);
+
+    const emptyDirCid = await unixfs.addDirectory();
+    const fileCid = await unixfs.addBytes(uint8ArrayFromString("Hello, Helia!"));
+    const updatedDirCid = await unixfs.cp(fileCid, emptyDirCid, "foo.txt");
+    console.log(`Updated directory CID: ${updatedDirCid}`);
   });
 
 program.parse(process.argv);
