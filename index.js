@@ -14,9 +14,11 @@ import { MemoryBlockstore } from "blockstore-core/memory";
 import { fromString as uint8ArrayFromString } from "uint8arrays/from-string";
 import { Command } from "commander";
 import { toString as uint8ArrayToString } from "uint8arrays/to-string";
+import { concat as uin8ArrayConcat } from "uint8arrays/concat";
 import { getIPNSNameFromKeypair } from "./utils.js";
 import { create as createKuboClient } from "kubo-rpc-client";
 import fs from "fs";
+
 import Dag from "./dag.js";
 import CarStream from "./car-stream.js";
 import Web3Storage from "./web3-storage.js";
@@ -382,5 +384,85 @@ program
     fs.writeFileSync(csvFile, csv);
     console.log(`CSV file created at: ${csvFile}`);
   });
+
+const makeMFSCommand = () => {
+  const mfs = new Command("mfs");
+  // MFS目录
+  const mfsDir = path.join("/", "test");
+
+  mfs
+    .description("Manage MFS (Mutable File System) operations")
+    .version("0.0.1", "-v, --version", "Output the current version");
+
+  mfs
+    .command("write")
+    .description("Write a file to MFS")
+    .action(async () => {
+      const localFile = Math.random() + ".txt";
+      const hash = "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9";
+      const mfsFile = path.join(mfsDir, hash, localFile);
+      await kubo.files.write(
+        mfsFile,
+        Buffer.from(
+          JSON.stringify(
+            {
+              name: localFile,
+              description: "test file",
+              date: new Date().toISOString()
+            },
+            null,
+            2
+          )
+        ),
+        {
+          create: true,
+          parents: true,
+          // truncate: true 覆盖原文件
+          // truncate: false, 不覆盖原文件
+          // 例如: 原文件内容为test, 写入的内容为m, 则MFS中的文件内容为mest
+          truncate: true,
+          cidVersion: 1
+          // HAMT(Hash Array Mapped Trie)
+          // 如果目录下的文件数量超过 shardSplitThreshold，则会将目录拆分成多个子目录
+          // 这有助于提高性能，特别是在处理大量小文件时, 递归 pin、内容同步等操作效率更高
+
+          // kubo 0.36.0 好像移除了
+          // shardSplitThreshold: 1000
+        }
+      );
+
+      console.log(`已将 ${localFile} 添加到 Kubo 的 MFS 目录 ${mfsDir}`);
+      const stat = await kubo.files.stat(mfsDir);
+      console.log("当前目录 CID:", stat.cid.toString());
+
+      // await kubo.routing.provide(stat.cid, {
+      //   recursive: true
+      // });
+    });
+
+  mfs
+    .command("read")
+    .description("Read a file from MFS")
+    .action(async () => {
+      const chunks = [];
+      for await (const value of await kubo.files.read(path.join(mfsDir, "0.20183438980027257.txt"))) {
+        chunks.push(value);
+      }
+      const v = uint8ArrayToString(uin8ArrayConcat(chunks));
+      console.log(`读取到的内容: ${v}`);
+    });
+
+  mfs
+    .command("stat")
+    .description("Stat cid")
+    .action(async () => {
+      const stat = await kubo.files.stat(mfsDir);
+      console.log("Stat Result:", stat);
+    });
+
+  return mfs;
+};
+
+program.addCommand(makeMFSCommand());
 
 program.parse(process.argv);
