@@ -27,6 +27,7 @@
     "@web3-storage/car-block-validator": "^1.2.2",
     "@web3-storage/w3up-client": "^17.3.0",
     "commander": "^14.0.0",
+    "eciesjs": "^0.4.15",
     "helia": "^5.4.2",
     "ipfs-unixfs-importer": "^15.4.0",
     "kubo-rpc-client": "^5.2.0",

@@ -30,6 +30,8 @@ import { Parser } from "@json2csv/plainjs";
 import { string as stringFormatter } from "@json2csv/formatters";
 import validate from "./validate-car.js";
 import unzip from "./unzip.js";
+import { decrypt, encrypt } from "./ecies.js";
+import { PrivateKey } from "eciesjs";
 
 const PRIVATE_KEY = "CAESQKt9yzxEa4vNMnqqj6ABo6ierevBv9S0RdYzeQArEr8hekAAWPlAhk4lepVC43Aj+6Dh4lUThxitF9O4Tzo8FB0";
 const keypair = privateKeyFromProtobuf(uint8ArrayFromString(PRIVATE_KEY, "base64"));
@@ -395,6 +397,27 @@ program
     const hash = sha256.create().update(message).digest();
     const hashHex = bytesToHex(hash);
     console.log(`SHA256 hash of "${message}":`, hashHex);
+  });
+
+program
+  .command("ecies")
+  .description("ECIES encryption and decryption")
+  .argument("<message>", "Message to encrypt")
+  .argument("[curve]", "Elliptic curve to use (default: ed25519)", "ed25519")
+  .action(async (message, curve) => {
+    const sk = new PrivateKey(undefined, curve);
+    const encrypted = await encrypt({
+      publicKey: sk.publicKey.toBytes(),
+      data: Buffer.from(message),
+      curve
+    });
+    console.log("Encrypted Data:", uint8ArrayToString(encrypted, "hex"));
+    const decrypted = await decrypt({
+      privateKey: sk.secret,
+      data: encrypted,
+      curve
+    });
+    console.log("Decrypted Data:", uint8ArrayToString(decrypted));
   });
 
 const makeMFSCommand = () => {
