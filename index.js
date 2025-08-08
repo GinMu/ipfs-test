@@ -472,6 +472,11 @@ const makeMFSCommand = () => {
       // await kubo.routing.provide(stat.cid, {
       //   recursive: true
       // });
+
+      await kubo.name.publish(stat.cid, {
+        key: "letsdex",
+        resolve: false
+      });
     });
 
   mfs
@@ -492,6 +497,17 @@ const makeMFSCommand = () => {
     .action(async () => {
       const stat = await kubo.files.stat(mfsDir);
       console.log("Stat Result:", stat);
+    });
+
+  mfs
+    .command("ipns-resolve")
+    .description("Resolve IPNS record for MFS")
+    .action(async () => {
+      const ipnsName = "/ipns/k51qzi5uqu5dgx5q97fnce6xy04ddthkvstdlg4j7or1fsuluvdt8bnnkusjy0";
+
+      for await (const name of kubo.name.resolve(ipnsName)) {
+        console.log(name);
+      }
     });
 
   return mfs;
