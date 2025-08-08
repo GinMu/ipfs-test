@@ -18,6 +18,8 @@ import { concat as uin8ArrayConcat } from "uint8arrays/concat";
 import { getIPNSNameFromKeypair } from "./utils.js";
 import { create as createKuboClient } from "kubo-rpc-client";
 import fs from "fs";
+import { sha256 } from "@noble/hashes/sha2";
+import { bytesToHex } from "@noble/hashes/utils";
 
 import Dag from "./dag.js";
 import CarStream from "./car-stream.js";
@@ -385,6 +387,16 @@ program
     console.log(`CSV file created at: ${csvFile}`);
   });
 
+program
+  .command("sha256")
+  .description("Calculate SHA256 hash of a message")
+  .argument("<message>", "Message to hash")
+  .action((message) => {
+    const hash = sha256.create().update(message).digest();
+    const hashHex = bytesToHex(hash);
+    console.log(`SHA256 hash of "${message}":`, hashHex);
+  });
+
 const makeMFSCommand = () => {
   const mfs = new Command("mfs");
   // MFS目录
@@ -399,8 +411,7 @@ const makeMFSCommand = () => {
     .description("Write a file to MFS")
     .action(async () => {
       const localFile = Math.random() + ".txt";
-      const hash = "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9";
-      const mfsFile = path.join(mfsDir, hash, localFile);
+      const mfsFile = path.join(mfsDir, localFile);
       await kubo.files.write(
         mfsFile,
         Buffer.from(
