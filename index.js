@@ -32,6 +32,7 @@ import validate from "./validate-car.js";
 import unzip from "./unzip.js";
 import { decrypt, encrypt } from "./ecies.js";
 import { PrivateKey } from "eciesjs";
+import { secp256k1 } from "@noble/curves/secp256k1";
 
 const PRIVATE_KEY = "CAESQKt9yzxEa4vNMnqqj6ABo6ierevBv9S0RdYzeQArEr8hekAAWPlAhk4lepVC43Aj+6Dh4lUThxitF9O4Tzo8FB0";
 const keypair = privateKeyFromProtobuf(uint8ArrayFromString(PRIVATE_KEY, "base64"));
@@ -418,6 +419,26 @@ program
       curve
     });
     console.log("Decrypted Data:", uint8ArrayToString(decrypted));
+  });
+
+program
+  .command("secp256k1")
+  .description("SECP256K1 sign and verify")
+  .action(async () => {
+    const priv = secp256k1.utils.randomPrivateKey();
+    const pub = secp256k1.getPublicKey(priv);
+
+    const buf = fs.readFileSync("./README.md");
+
+    const hash = sha256.create().update(buf).digest();
+    console.log(`SHA256 hash of "./README.md":`, bytesToHex(hash));
+
+    const signature = secp256k1.sign(bytesToHex(hash), priv);
+
+    console.log(`Signature of "./README.md":`, signature.toDERHex());
+
+    const verified = secp256k1.verify(signature.toDERHex(), hash, pub);
+    console.log(`Signature verification result:`, verified);
   });
 
 const makeMFSCommand = () => {
