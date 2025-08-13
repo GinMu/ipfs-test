@@ -455,8 +455,9 @@ const makeMFSCommand = () => {
     .command("write")
     .description("Write a file to MFS")
     .action(async () => {
-      const localFile = Math.random() + ".txt";
       const publicKey = "027d8aa2c023b41ae1b86ea806c5bf84db48801e884778e44741c229d0e5ad6a37";
+      const localFile = path.join(publicKey, Math.random() + ".txt");
+
       const mfsFile = makeMfsFilePath(publicKey, localFile, {
         levels: 2,
         segmentLen: 2,
