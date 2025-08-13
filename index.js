@@ -33,6 +33,7 @@ import unzip from "./unzip.js";
 import { decrypt, encrypt } from "./ecies.js";
 import { PrivateKey } from "eciesjs";
 import { secp256k1 } from "@noble/curves/secp256k1";
+import { makeBucketPath, makeMfsFilePath } from "./path-bucket.js";
 
 const PRIVATE_KEY = "CAESQKt9yzxEa4vNMnqqj6ABo6ierevBv9S0RdYzeQArEr8hekAAWPlAhk4lepVC43Aj+6Dh4lUThxitF9O4Tzo8FB0";
 const keypair = privateKeyFromProtobuf(uint8ArrayFromString(PRIVATE_KEY, "base64"));
@@ -455,7 +456,14 @@ const makeMFSCommand = () => {
     .description("Write a file to MFS")
     .action(async () => {
       const localFile = Math.random() + ".txt";
-      const mfsFile = path.join(mfsDir, localFile);
+      const publicKey = "027d8aa2c023b41ae1b86ea806c5bf84db48801e884778e44741c229d0e5ad6a37";
+      const mfsFile = makeMfsFilePath(publicKey, localFile, {
+        levels: 2,
+        segmentLen: 2,
+        useCidPrefix: false,
+        root: mfsDir
+      });
+      console.log("MFS File Path:", mfsFile);
       await kubo.files.write(
         mfsFile,
         Buffer.from(
@@ -486,7 +494,6 @@ const makeMFSCommand = () => {
         }
       );
 
-      console.log(`已将 ${localFile} 添加到 Kubo 的 MFS 目录 ${mfsDir}`);
       const stat = await kubo.files.stat(mfsDir);
       console.log("当前目录 CID:", stat.cid.toString());
 
@@ -494,10 +501,10 @@ const makeMFSCommand = () => {
       //   recursive: true
       // });
 
-      await kubo.name.publish(stat.cid, {
-        key: "letsdex",
-        resolve: false
-      });
+      // await kubo.name.publish(stat.cid, {
+      //   key: "letsdex",
+      //   resolve: false
+      // });
     });
 
   mfs
