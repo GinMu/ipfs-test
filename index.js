@@ -505,7 +505,11 @@ const makeMFSCommand = () => {
       // 耗时操作
       await kubo.name.publish(stat.cid, {
         key: "letsdex",
-        resolve: false
+        resolve: false,
+        // 解析方的缓存时长, ttl到期提醒解析器重新获取更新, 默认5m0s
+        ttl: "30s",
+        // ipns有效期, 超过ipns记录失效, 需要重新发布, 默认48h0m0s
+        lifetime: "48h0m0s"
       });
     });
 
@@ -537,7 +541,10 @@ const makeMFSCommand = () => {
       const ipnsName = "/ipns/k51qzi5uqu5dj7ia3bre0bok7ft5oryq3q53heli5r7t2gulqzgnku6c1dde58";
       const dir = path.join(ipnsName, filePath);
       const names = [];
-      for await (const name of kubo.name.resolve(dir)) {
+      for await (const name of kubo.name.resolve(dir, {
+        // 不使用缓存, 能获取到最新的
+        nocache: true
+      })) {
         names.push(name);
       }
       console.log("Resolved IPNS Name:", names[0]);
@@ -546,7 +553,7 @@ const makeMFSCommand = () => {
       for await (const file of kubo.ls(names[0])) {
         files.push(file);
       }
-      console.log("Resolved IPNS Files:", files);
+      console.log("Resolved IPNS Files:", files.length);
     });
 
   return mfs;
