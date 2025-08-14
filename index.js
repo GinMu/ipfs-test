@@ -502,10 +502,11 @@ const makeMFSCommand = () => {
       //   recursive: true
       // });
 
-      // await kubo.name.publish(stat.cid, {
-      //   key: "letsdex",
-      //   resolve: false
-      // });
+      // 耗时操作
+      await kubo.name.publish(stat.cid, {
+        key: "letsdex",
+        resolve: false
+      });
     });
 
   mfs
@@ -531,12 +532,21 @@ const makeMFSCommand = () => {
   mfs
     .command("ipns-resolve")
     .description("Resolve IPNS record for MFS")
-    .action(async () => {
-      const ipnsName = "/ipns/k51qzi5uqu5dgx5q97fnce6xy04ddthkvstdlg4j7or1fsuluvdt8bnnkusjy0";
-
-      for await (const name of kubo.name.resolve(ipnsName)) {
-        console.log(name);
+    .argument("<filePath>", "The file path to resolve")
+    .action(async (filePath) => {
+      const ipnsName = "/ipns/k51qzi5uqu5dj7ia3bre0bok7ft5oryq3q53heli5r7t2gulqzgnku6c1dde58";
+      const dir = path.join(ipnsName, filePath);
+      const names = [];
+      for await (const name of kubo.name.resolve(dir)) {
+        names.push(name);
       }
+      console.log("Resolved IPNS Name:", names[0]);
+
+      const files = [];
+      for await (const file of kubo.ls(names[0])) {
+        files.push(file);
+      }
+      console.log("Resolved IPNS Files:", files);
     });
 
   return mfs;
