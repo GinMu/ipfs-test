@@ -539,21 +539,19 @@ const makeMFSCommand = () => {
     .argument("[filePath]", "The file path to resolve", "")
     .action(async (filePath) => {
       const ipnsName = "/ipns/k51qzi5uqu5dj7ia3bre0bok7ft5oryq3q53heli5r7t2gulqzgnku6c1dde58";
-      const dir = path.join(ipnsName, filePath);
-      const names = [];
-      for await (const name of kubo.name.resolve(dir, {
-        // 不使用缓存, 能获取到最新的
+      let name;
+      for await (name of kubo.name.resolve(ipnsName, {
+        // 不使用缓存, 直接获取最新的
         nocache: true
       })) {
-        names.push(name);
       }
-      console.log("Resolved IPNS Name:", names[0]);
+      console.log("Resolved IPNS Name:", name);
 
       const files = [];
-      for await (const file of kubo.ls(names[0])) {
+      for await (const file of kubo.ls(path.join(name, filePath))) {
         files.push(file);
       }
-      console.log("Resolved IPNS Files:", files.length);
+      console.log("Resolved IPNS Files:", files);
     });
 
   return mfs;
