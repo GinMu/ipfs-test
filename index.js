@@ -532,7 +532,7 @@ const makeMFSCommand = () => {
   mfs
     .command("ipns-resolve")
     .description("Resolve IPNS record for MFS")
-    .argument("<filePath>", "The file path to resolve")
+    .argument("[filePath]", "The file path to resolve", "")
     .action(async (filePath) => {
       const ipnsName = "/ipns/k51qzi5uqu5dj7ia3bre0bok7ft5oryq3q53heli5r7t2gulqzgnku6c1dde58";
       const dir = path.join(ipnsName, filePath);
