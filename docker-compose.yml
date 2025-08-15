@@ -1,0 +1,102 @@
+services:
+  # -----------------------
+  # KUBO / IPFS NODES
+  # -----------------------
+  ipfs1:
+    image: ipfs/kubo:latest
+    container_name: ipfs1
+    restart: unless-stopped
+    ports:
+      - "4001:4001/tcp"
+      - "4001:4001/udp"
+
+  ipfs2:
+    image: ipfs/kubo:latest
+    container_name: ipfs2
+    restart: unless-stopped
+    ports:
+      - "4101:4001/tcp"
+      - "4101:4001/udp"
+
+  ipfs3:
+    image: ipfs/kubo:latest
+    container_name: ipfs3
+    restart: unless-stopped
+    ports:
+      - "4201:4001/tcp"
+      - "4201:4001/udp"
+
+  # -----------------------
+  # CLUSTER PEERS
+  # -----------------------
+  cluster1:
+    image: ipfs/ipfs-cluster:latest
+    container_name: cluster1
+    restart: unless-stopped
+    depends_on:
+      ipfs1:
+        condition: service_healthy
+    environment:
+      CLUSTER_PEERNAME: "peer1"
+      CLUSTER_SECRET: "${CLUSTER_SECRET}"
+      CLUSTER_TRUST_ALL: "true"
+      CLUSTER_REPLICATIONFACTOR_MIN: "${REPLICATION_MIN}"
+      CLUSTER_REPLICATIONFACTOR_MAX: "${REPLICATION_MAX}"
+      CLUSTER_IPFSHTTP_NODEMULTIADDRESS: "/dns4/ipfs1/tcp/5001"
+      CLUSTER_IPFSPROXY_NODEMULTIADDRESS: "/dns4/ipfs1/tcp/5001"
+      CLUSTER_RESTAPI_HTTP_LISTENMULTIADDRESS: "/ip4/0.0.0.0/tcp/9094"
+      CLUSTER_IPFSPROXY_LISTENMULTIADDRESS: "/ip4/0.0.0.0/tcp/9095"
+      # cluster swarm listen 端口自动（一般 9096/9096/udp），也可通过 CLUSTER_LISTEN_MULTIADDRESS 定制
+    ports:
+      - "9094:9094"
+      - "9095:9095"
+
+  cluster2:
+    image: ipfs/ipfs-cluster:latest
+    container_name: cluster2
+    restart: unless-stopped
+    depends_on:
+      ipfs2:
+        condition: service_healthy
+    environment:
+      CLUSTER_PEERNAME: "peer2"
+      CLUSTER_SECRET: "${CLUSTER_SECRET}"
+      CLUSTER_TRUST_ALL: "true"
+      CLUSTER_REPLICATIONFACTOR_MIN: "${REPLICATION_MIN}"
+      CLUSTER_REPLICATIONFACTOR_MAX: "${REPLICATION_MAX}"
+      CLUSTER_IPFSHTTP_NODEMULTIADDRESS: "/dns4/ipfs2/tcp/5001"
+      CLUSTER_IPFSPROXY_NODEMULTIADDRESS: "/dns4/ipfs2/tcp/5001"
+      CLUSTER_RESTAPI_HTTP_LISTENMULTIADDRESS: "/ip4/0.0.0.0/tcp/9194"
+      CLUSTER_IPFSPROXY_LISTENMULTIADDRESS: "/ip4/0.0.0.0/tcp/9195"
+      # 启动前填真实 bootstrap multiaddr（来自 cluster1）
+      CLUSTER_BOOTSTRAP: "${CLUSTER_BOOTSTRAP}"
+
+    ports:
+      - "9194:9194"
+      - "9195:9195"
+
+  cluster3:
+    image: ipfs/ipfs-cluster:latest
+    container_name: cluster3
+    restart: unless-stopped
+    depends_on:
+      ipfs3:
+        condition: service_healthy
+    environment:
+      CLUSTER_PEERNAME: "peer3"
+      CLUSTER_SECRET: "${CLUSTER_SECRET}"
+      CLUSTER_TRUST_ALL: "true"
+      CLUSTER_REPLICATIONFACTOR_MIN: "${REPLICATION_MIN}"
+      CLUSTER_REPLICATIONFACTOR_MAX: "${REPLICATION_MAX}"
+      CLUSTER_IPFSHTTP_NODEMULTIADDRESS: "/dns4/ipfs3/tcp/5001"
+      CLUSTER_IPFSPROXY_NODEMULTIADDRESS: "/dns4/ipfs3/tcp/5001"
+      CLUSTER_RESTAPI_HTTP_LISTENMULTIADDRESS: "/ip4/0.0.0.0/tcp/9294"
+      CLUSTER_IPFSPROXY_LISTENMULTIADDRESS: "/ip4/0.0.0.0/tcp/9295"
+      CLUSTER_BOOTSTRAP: "${CLUSTER_BOOTSTRAP}"
+    ports:
+      - "9294:9294"
+      - "9295:9295"
+
+networks:
+  default:
+    name: ipfs-net

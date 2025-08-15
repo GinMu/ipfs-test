@@ -33,14 +33,15 @@ import unzip from "./unzip.js";
 import { decrypt, encrypt } from "./ecies.js";
 import { PrivateKey } from "eciesjs";
 import { secp256k1 } from "@noble/curves/secp256k1";
-import { makeBucketPath, makeMfsFilePath } from "./path-bucket.js";
+import { makeMfsFilePath } from "./path-bucket.js";
 
 const PRIVATE_KEY = "CAESQKt9yzxEa4vNMnqqj6ABo6ierevBv9S0RdYzeQArEr8hekAAWPlAhk4lepVC43Aj+6Dh4lUThxitF9O4Tzo8FB0";
 const keypair = privateKeyFromProtobuf(uint8ArrayFromString(PRIVATE_KEY, "base64"));
 const helia = await createHeliaHTTP();
 const ipns = IPNS(helia);
+
 const kubo = createKuboClient({
-  url: "http://127.0.0.1:5001"
+  url: "http://127.0.0.1:9095"
 });
 
 const CID1 = CID.parse("bafkreie7ohywtosou76tasm7j63yigtzxe7d5zqus4zu3j6oltvgtibeom");
@@ -447,6 +448,14 @@ const makeMFSCommand = () => {
   // MFS目录
   const mfsDir = path.join("/", "test");
 
+  const cluster2 = createKuboClient({
+    url: "http://127.0.0.1:9195"
+  });
+
+  const cluster3 = createKuboClient({
+    url: "http://127.0.0.1:9295"
+  });
+
   mfs
     .description("Manage MFS (Mutable File System) operations")
     .version("0.0.1", "-v, --version", "Output the current version");
@@ -518,7 +527,12 @@ const makeMFSCommand = () => {
     .description("Read a file from MFS")
     .action(async () => {
       const chunks = [];
-      for await (const value of await kubo.files.read(path.join(mfsDir, "0.20183438980027257.txt"))) {
+      for await (const value of await kubo.files.read(
+        path.join(
+          mfsDir,
+          "24/3f/027d8aa2c023b41ae1b86ea806c5bf84db48801e884778e44741c229d0e5ad6a37/0.16130438654703982.txt"
+        )
+      )) {
         chunks.push(value);
       }
       const v = uint8ArrayToString(uin8ArrayConcat(chunks));
@@ -534,13 +548,22 @@ const makeMFSCommand = () => {
     });
 
   mfs
+    .command("pin")
+    .description("Pin a cid by ipfs cluster")
+    .argument("<cid>", "CID to pin")
+    .action(async (cid) => {
+      const result = await kubo.pin.add(cid);
+      console.log("Pin Result:", result);
+    });
+
+  mfs
     .command("ipns-resolve")
     .description("Resolve IPNS record for MFS")
     .argument("[filePath]", "The file path to resolve", "")
     .action(async (filePath) => {
-      const ipnsName = "/ipns/k51qzi5uqu5dj7ia3bre0bok7ft5oryq3q53heli5r7t2gulqzgnku6c1dde58";
+      const ipnsName = "/ipns/k51qzi5uqu5dl0j0nybm7n1wduz5p4jc5lz2bsmr9vt3hgnnfryz007xtbzptx";
       let name;
-      for await (name of kubo.name.resolve(ipnsName, {
+      for await (name of cluster2.name.resolve(ipnsName, {
         // 不使用缓存, 直接获取最新的
         nocache: true
       })) {
@@ -548,7 +571,7 @@ const makeMFSCommand = () => {
       console.log("Resolved IPNS Name:", name);
 
       const files = [];
-      for await (const file of kubo.ls(path.join(name, filePath))) {
+      for await (const file of cluster3.ls(path.join(name, filePath))) {
         files.push(file);
       }
       console.log("Resolved IPNS Files:", files);
