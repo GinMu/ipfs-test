@@ -512,14 +512,14 @@ const makeMFSCommand = () => {
       // });
 
       // 耗时操作
-      await kubo.name.publish(stat.cid, {
-        key: "letsdex",
-        resolve: false,
-        // 解析方的缓存时长, ttl到期提醒解析器重新获取更新, 默认5m0s
-        ttl: "30s",
-        // ipns有效期, 超过ipns记录失效, 需要重新发布, 默认48h0m0s
-        lifetime: "48h0m0s"
-      });
+      // await kubo.name.publish(stat.cid, {
+      //   key: "letsdex",
+      //   resolve: false,
+      //   // 解析方的缓存时长, ttl到期提醒解析器重新获取更新, 默认5m0s
+      //   ttl: "30s",
+      //   // ipns有效期, 超过ipns记录失效, 需要重新发布, 默认48h0m0s
+      //   lifetime: "48h0m0s"
+      // });
     });
 
   mfs
@@ -575,6 +575,20 @@ const makeMFSCommand = () => {
         files.push(file);
       }
       console.log("Resolved IPNS Files:", files);
+    });
+
+  mfs
+    .command("mv")
+    .description("Move a file in MFS")
+    .argument("<file>", "The file to move")
+    .argument("<dest>", "The destination directory")
+    .action(async (file, dest) => {
+      const { base } = path.parse(file);
+
+      await kubo.files.mkdir(dest, {
+        parents: true
+      });
+      await kubo.files.mv(file, path.join(dest, base));
     });
 
   return mfs;
