@@ -41,7 +41,7 @@ const helia = await createHeliaHTTP();
 const ipns = IPNS(helia);
 
 const kubo = createKuboClient({
-  url: "http://127.0.0.1:9095"
+  url: "http://127.0.0.1:5001"
 });
 
 const CID1 = CID.parse("bafkreie7ohywtosou76tasm7j63yigtzxe7d5zqus4zu3j6oltvgtibeom");
@@ -335,7 +335,7 @@ program
       }
       console.info("Provided CID:", cids);
     } catch (error) {
-      console.error(`Failed to provide CID: ${cid}`, error);
+      console.error(`Failed to provide CID: ${cids}`, error);
     }
   });
 
