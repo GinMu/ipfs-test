@@ -89,7 +89,8 @@ const publishDid = async () => {
 
 const resolveDid = async () => {
   const resolved = await resolver.resolve(did.toString());
-  console.log("Resolved DID Document:", JSON.stringify(resolved, null, 2));
+  console.log("Resolved DID Document:");
+  console.dir(resolved, { depth: null });
 };
 const verifyVC = async () => {
   const resolved = await resolver.resolve(did.toString());
@@ -99,7 +100,8 @@ const verifyVC = async () => {
   const verifyResult = await vc.verify({
     resolver
   });
-  console.log("VC Verify Result:", JSON.stringify(verifyResult, null, 2));
+  console.log("VC Verify Result:");
+  console.dir(verifyResult, { depth: null });
 };
 
 program
