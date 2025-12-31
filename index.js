@@ -37,7 +37,9 @@ import { makeMfsFilePath } from "./path-bucket.js";
 
 const PRIVATE_KEY = "CAESQKt9yzxEa4vNMnqqj6ABo6ierevBv9S0RdYzeQArEr8hekAAWPlAhk4lepVC43Aj+6Dh4lUThxitF9O4Tzo8FB0";
 const keypair = privateKeyFromProtobuf(uint8ArrayFromString(PRIVATE_KEY, "base64"));
-const helia = await createHeliaHTTP();
+const helia = await createHeliaHTTP({
+  start: false
+});
 const ipns = IPNS(helia);
 
 const kubo = createKuboClient({
